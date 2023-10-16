@@ -1,5 +1,6 @@
 import db from "../database/db.js";
 import User from "../model/userModel.js";
+import router from "../routes/index.js";
 const sample = async (req, res) => {
   try {
     res.json({
@@ -18,25 +19,44 @@ const test = async (req, res) => {
   }
 };
 
+// const adduser = async (req, res) => {
+//   const { username,age } = req.params;
+
+//   if (username) {
+//     try {
+//       const user = await User.create({ name: username});
+
+//       console.log("hello00000000000000000000000000000000000");
+//       if(res.status(200)){
+//         const allusers=await User.find({})
+//         res.json(allusers)
+//       }
+//       // res.status(200).json({ message: "User added successfully" });
+//     } catch (error) {
+//       console.log("Helllooooooooooooooooo");
+//       res.status(500).json({ err: "Server error" });
+//     }
+//   }
+// };
+
 const adduser = async (req, res) => {
-  const { username,age } = req.params;
+  try {
+    const { name, age, email,profileImage} = req.body;
+    console.log(req.body);
+    if (name && age && email && profileImage) {
+      const user = await User.create({ name: name, age: age, email: email,profileImage:profileImage});
+      console.log(user);
+      console.log("User added successfully");
 
-  if (username) {
-    try {
-      const user = await User.create({ name: username});
-
-      console.log("hello00000000000000000000000000000000000");
-      if(res.status(200)){
-        const allusers=await User.find({})
-        res.json(allusers)
-      }
-      // res.status(200).json({ message: "User added successfully" });
-    } catch (error) {
-      console.log("Helllooooooooooooooooo");
-      res.status(500).json({ err: "Server error" });
+      const allUsers = await User.find({});
+      res.status(200).json(allUsers);
     }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ err: "Server error" });
   }
 };
+
 
 const updateuser =async (req,res)=>{
   try {
@@ -111,6 +131,30 @@ const deleteuser = async (req, res) => {
   }
 };
 
+const userPagination = async (req, res) => {
+  const {page,limit}=req.params
+  console.log(req.params); // Number of results per page
+
+  try {
+    const skip = (page - 1) * limit;
+    const users = await User.find()
+      .skip(skip)
+      .limit(limit)
+      .exec();
+
+    res.json(users);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
+
+
+
+
+
+
+
 export default {
   sample,
   test,
@@ -118,5 +162,6 @@ export default {
   addData,
   getAllUsers,
   updateuser,
-  deleteuser
+  deleteuser,
+  userPagination
 };
